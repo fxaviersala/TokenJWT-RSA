@@ -19,7 +19,7 @@ namespace tokenGeneration
 
       
 
-        public string CreateToken()
+        public string CreateToken(int minutsDeValidesa)
         {
             // var privateKey = privatekey.ToByteArray();
 
@@ -34,7 +34,7 @@ namespace tokenGeneration
                 CryptoProviderFactory = new CryptoProviderFactory { CacheSignatureProviders = false }
             };
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var unixTimeSeconds = new DateTimeOffset(now).ToUnixTimeSeconds();
             var aBitOfSalt =
                 Guid
@@ -44,20 +44,27 @@ namespace tokenGeneration
                 .Last();
             var id = $"{1}";
 
+            var expiration = DateTimeOffset
+                .UtcNow
+                .AddMinutes(minutsDeValidesa)
+                .AddSeconds(0)
+                .ToUnixTimeSeconds();
+
 
             var jwt = new JwtSecurityToken(
                 audience: "http://locahost:5000",
                 issuer: "http://aliga3.udg.cat",
                 claims: new Claim[] {
                     new Claim(JwtRegisteredClaimNames.Iat, unixTimeSeconds.ToString(), ClaimValueTypes.Integer64),
+                    new Claim(JwtRegisteredClaimNames.Exp, expiration.ToString(), ClaimValueTypes.Integer64),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(nameof(aBitOfSalt), aBitOfSalt),
                     new Claim(nameof(id), id),
                 },
                 notBefore: now,
-                expires: now.AddMinutes(10),
+                // expires: expiration,
                 signingCredentials: signingCredentials
-            );
+            );;
 
             string token = new JwtSecurityTokenHandler().WriteToken(jwt);
 
@@ -70,10 +77,11 @@ namespace tokenGeneration
         {
 
             // var publicKey = publickey.ToByteArray();
-            var publicPem = File.ReadAllText(publickey);
-
-            using RSA rsa = RSA.Create();
             // rsa.ImportRSAPublicKey(publicKey, out _);
+
+            var publicPem = File.ReadAllText(publickey);
+            using RSA rsa = RSA.Create();
+
             rsa.ImportFromPem(publicPem);
 
             var validationParameters = new TokenValidationParameters
@@ -88,7 +96,8 @@ namespace tokenGeneration
                 CryptoProviderFactory = new CryptoProviderFactory()
                 {
                     CacheSignatureProviders = false
-                }
+                },
+                ClockSkew = TimeSpan.Zero   // sinó es posa dóna un marge de 5 minuts .. 
             };
 
             try

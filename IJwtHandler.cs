@@ -1,4 +1,4 @@
 public interface IJwtHandler {
-    string CreateToken();
+    string CreateToken(int minutsDeValidesa = 10);
     bool ValidateToken(string token);
 }
