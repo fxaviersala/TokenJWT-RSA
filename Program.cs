@@ -20,17 +20,25 @@ namespace tokenGeneration
 
             // Genera un token a partir de la clau privada
             var token = jwtCreator.CreateToken(minutesValid);
+            Console.WriteLine($"Obtenir un token per {minutesValid} minut");
+            Console.WriteLine("----------------------------------------------");
             Console.WriteLine($"Token: {token}");
 
             Console.WriteLine();
-            Console.WriteLine(DateTime.Now);
+
+            Console.WriteLine($"Verificant a {DateTime.Now}");
+            Console.WriteLine("----------------------------------------------");
             // Verifica el token, però només fa servir la clau pública
             Console.WriteLine($"Valida: {jwtCreator.ValidateToken(token)}");
-
-            Console.WriteLine("Esperant una estona (ves que no sigui per fer caducar el token)");
+            
+            Console.WriteLine();
+            Console.WriteLine("Esperant una estona (ves que no sigui per fer caducar el token...)");
             Task.Delay(6 * minutesValid * 10000 + 20000).Wait();
+
+            Console.WriteLine();
             // Verifica si el token ha caducat
-            Console.WriteLine(DateTime.Now);
+            Console.WriteLine($"Verificant a {DateTime.Now}");
+            Console.WriteLine("----------------------------------------------");
             Console.WriteLine($"Valida: {jwtCreator.ValidateToken(token)}");
 
         }

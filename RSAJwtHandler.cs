@@ -17,7 +17,7 @@ namespace tokenGeneration
         private const string publickey = "public.pem";
         private const string privatekey = "private.pem";
 
-      
+
 
         public string CreateToken(int minutsDeValidesa)
         {
@@ -34,7 +34,7 @@ namespace tokenGeneration
                 CryptoProviderFactory = new CryptoProviderFactory { CacheSignatureProviders = false }
             };
 
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var unixTimeSeconds = new DateTimeOffset(now).ToUnixTimeSeconds();
             var aBitOfSalt =
                 Guid
@@ -55,16 +55,15 @@ namespace tokenGeneration
                 audience: "http://locahost:5000",
                 issuer: "http://aliga3.udg.cat",
                 claims: new Claim[] {
-                    new Claim(JwtRegisteredClaimNames.Iat, unixTimeSeconds.ToString(), ClaimValueTypes.Integer64),
-                    new Claim(JwtRegisteredClaimNames.Exp, expiration.ToString(), ClaimValueTypes.Integer64),
+                    new Claim(JwtRegisteredClaimNames.Iat, unixTimeSeconds.ToString(), ClaimValueTypes.Integer64), // El podria fer amb atributs però és per fer-lo diferent
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(nameof(aBitOfSalt), aBitOfSalt),
                     new Claim(nameof(id), id),
                 },
                 notBefore: now,
-                // expires: expiration,
+                expires: now.AddMinutes(minutsDeValidesa),
                 signingCredentials: signingCredentials
-            );;
+            );
 
             string token = new JwtSecurityTokenHandler().WriteToken(jwt);
 
@@ -97,7 +96,7 @@ namespace tokenGeneration
                 {
                     CacheSignatureProviders = false
                 },
-                ClockSkew = TimeSpan.Zero   // sinó es posa dóna un marge de 5 minuts .. 
+                ClockSkew = TimeSpan.Zero   // sinó es posa dóna un marge de 5 minuts ..
             };
 
             try
