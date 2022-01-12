@@ -14,8 +14,8 @@ Per generar-ne de noves només cal fer servir **OpenSSL** per generar la clau se
 openssl genrsa -out private.pem 2048
 ```
 
-I extreure la clau pública:
+I extreure la clau pública del arxiu generat en l'anterior pas:
 
 ```console
-openssl -rsa -in KEY -pubout -out public.pem
+openssl -rsa -in private.pem -pubout -out public.pem
 ```
